@@ -21,14 +21,40 @@ class SavedWordPairs extends _$SavedWordPairs {
   Set<WordPair> build() => {};
 
   void add(WordPair wordPair) {
-    debugPrint('add');
-    state.add(wordPair);
-    debugPrint('${state.map((e) => e.asPascalCase)}');
+    state = {...state, wordPair};
   }
 
   void remove(WordPair wordPair) {
-    debugPrint('remove');
     state.remove(wordPair);
+    state = {...state};
+  }
+}
+
+class ListTileWidget extends ConsumerWidget {
+  const ListTileWidget(this.wordPair, {super.key});
+  final WordPair wordPair;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final savedWordPairs = ref.watch(savedWordPairsProvider);
+    final alreadySaved = savedWordPairs.contains(wordPair);
+    return ListTile(
+      title: Text(
+        wordPair.asPascalCase,
+        style: const TextStyle(fontSize: 18),
+      ),
+      trailing: Icon(
+        alreadySaved ? Icons.favorite : Icons.favorite_border,
+        color: alreadySaved ? Colors.red : null,
+        semanticLabel: alreadySaved ? 'Remove from saved' : 'Save',
+      ),
+      onTap: () {
+        if (alreadySaved) {
+          ref.read(savedWordPairsProvider.notifier).remove(wordPair);
+        } else {
+          ref.read(savedWordPairsProvider.notifier).add(wordPair);
+        }
+      },
+    );
   }
 }
 
@@ -37,7 +63,6 @@ class RandomWordsWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wordPairs = ref.watch(wordPairsProvider);
-    final savedWordPairs = ref.watch(savedWordPairsProvider);
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
       itemBuilder: (context, i) {
@@ -46,28 +71,7 @@ class RandomWordsWidget extends ConsumerWidget {
         if (index >= wordPairs.length) {
           ref.read(wordPairsProvider.notifier).loadMore();
         }
-        final alreadySaved = savedWordPairs.contains(wordPairs[index]);
-        debugPrint('$alreadySaved');
-        return ListTile(
-          title: Text(
-            wordPairs[index].asPascalCase,
-            style: const TextStyle(fontSize: 18),
-          ),
-          trailing: Icon(
-            alreadySaved ? Icons.favorite : Icons.favorite_border,
-            color: alreadySaved ? Colors.red : null,
-            semanticLabel: alreadySaved ? 'Remove from saved' : 'Save',
-          ),
-          onTap: () {
-            if (alreadySaved) {
-              ref
-                  .read(savedWordPairsProvider.notifier)
-                  .remove(wordPairs[index]);
-            } else {
-              ref.read(savedWordPairsProvider.notifier).add(wordPairs[index]);
-            }
-          },
-        );
+        return ListTileWidget(wordPairs[index]);
       },
     );
   }
