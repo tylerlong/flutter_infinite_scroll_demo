@@ -1,5 +1,10 @@
 # startup_namer
 
-- Ref: https://codelabs.developers.google.com/codelabs/first-flutter-app-pt1?hl=en
+- Ref: https://codelabs.developers.google.com/codelabs/first-flutter-app-pt1
+- Ref: https://codelabs.developers.google.com/codelabs/first-flutter-app-pt2
 
-Infinite scrolling ListView.
+
+## Features
+
+- Infinite scrolling ListView.
+
