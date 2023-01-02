@@ -9,9 +9,26 @@ part 'main.g.dart';
 class WordPairs extends _$WordPairs {
   @override
   List<WordPair> build() => [];
+
   void loadMore() {
-    debugPrint('load more');
     state.addAll(generateWordPairs().take(10));
+  }
+}
+
+@riverpod
+class SavedWordPairs extends _$SavedWordPairs {
+  @override
+  Set<WordPair> build() => {};
+
+  void add(WordPair wordPair) {
+    debugPrint('add');
+    state.add(wordPair);
+    debugPrint('${state.map((e) => e.asPascalCase)}');
+  }
+
+  void remove(WordPair wordPair) {
+    debugPrint('remove');
+    state.remove(wordPair);
   }
 }
 
@@ -20,6 +37,7 @@ class RandomWordsWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wordPairs = ref.watch(wordPairsProvider);
+    final savedWordPairs = ref.watch(savedWordPairsProvider);
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
       itemBuilder: (context, i) {
@@ -28,11 +46,27 @@ class RandomWordsWidget extends ConsumerWidget {
         if (index >= wordPairs.length) {
           ref.read(wordPairsProvider.notifier).loadMore();
         }
+        final alreadySaved = savedWordPairs.contains(wordPairs[index]);
+        debugPrint('$alreadySaved');
         return ListTile(
           title: Text(
             wordPairs[index].asPascalCase,
             style: const TextStyle(fontSize: 18),
           ),
+          trailing: Icon(
+            alreadySaved ? Icons.favorite : Icons.favorite_border,
+            color: alreadySaved ? Colors.red : null,
+            semanticLabel: alreadySaved ? 'Remove from saved' : 'Save',
+          ),
+          onTap: () {
+            if (alreadySaved) {
+              ref
+                  .read(savedWordPairsProvider.notifier)
+                  .remove(wordPairs[index]);
+            } else {
+              ref.read(savedWordPairsProvider.notifier).add(wordPairs[index]);
+            }
+          },
         );
       },
     );
