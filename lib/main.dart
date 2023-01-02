@@ -11,6 +11,7 @@ class WordPairs extends _$WordPairs {
   List<WordPair> build() => [];
 
   void loadMore() {
+    // special: it is not rebuild, it is to change the list when building.
     state.addAll(generateWordPairs().take(10));
   }
 }
