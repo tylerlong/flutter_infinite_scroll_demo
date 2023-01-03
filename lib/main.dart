@@ -59,21 +59,70 @@ class ListTileWidget extends ConsumerWidget {
   }
 }
 
+class SavedWidget extends ConsumerWidget {
+  const SavedWidget({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final savedWordPairs = ref.watch(savedWordPairsProvider);
+    final tiles = savedWordPairs.map(
+      (pair) {
+        return ListTile(
+          title: Text(
+            pair.asPascalCase,
+            style: const TextStyle(fontSize: 18),
+          ),
+        );
+      },
+    );
+    final divided = tiles.isNotEmpty
+        ? ListTile.divideTiles(
+            context: context,
+            tiles: tiles,
+          ).toList()
+        : <Widget>[];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Saved Suggestions'),
+      ),
+      body: ListView(children: divided),
+    );
+  }
+}
+
 class RandomWordsWidget extends ConsumerWidget {
   const RandomWordsWidget({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wordPairs = ref.watch(wordPairsProvider);
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemBuilder: (context, i) {
-        if (i.isOdd) return const Divider();
-        final index = i ~/ 2;
-        if (index >= wordPairs.length) {
-          ref.read(wordPairsProvider.notifier).loadMore();
-        }
-        return ListTileWidget(wordPairs[index]);
-      },
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Welcome to Flutter'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.list),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) => const SavedWidget(),
+              ),
+            ),
+            tooltip: 'Saved Word Pairs',
+          ),
+        ],
+      ),
+      body: Center(
+        child: ListView.builder(
+          padding: const EdgeInsets.all(16.0),
+          itemBuilder: (context, i) {
+            if (i.isOdd) return const Divider();
+            final index = i ~/ 2;
+            if (index >= wordPairs.length) {
+              ref.read(wordPairsProvider.notifier).loadMore();
+            }
+            return ListTileWidget(wordPairs[index]);
+          },
+        ),
+      ),
     );
   }
 }
@@ -87,17 +136,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Welcome to Flutter',
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Welcome to Flutter'),
-        ),
-        body: const Center(
-          child: RandomWordsWidget(),
-        ),
-      ),
+      home: RandomWordsWidget(),
     );
   }
 }
